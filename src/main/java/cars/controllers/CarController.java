@@ -3,16 +3,16 @@ package cars.controllers;
 import java.util.Optional;
 import java.util.Vector;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,9 +26,6 @@ public class CarController {
 	
 	@Autowired
 	CarRepository carRepository;
-	
-	@PersistenceContext
-	EntityManager em;
 	
 	@PostMapping(value="/cars")
 	public void add( @RequestBody Car car, HttpServletResponse response) {
@@ -44,7 +41,7 @@ public class CarController {
 			response.addHeader("Location", "/cars/"+car.getId());
 			response.setStatus(HttpServletResponse.SC_CREATED);
 			
-		} if ( id > 0 ) {
+		} else if ( id > 0 ) {
 			
 			System.out.println("POST: (update) "+car);
 			
@@ -188,31 +185,29 @@ public class CarController {
 //		}  
 //	}
 //	
-//	@RequestMapping(value="/cars/{id}", method=RequestMethod.PATCH)
-//	public void patchCar(
-//			@PathVariable("id") int id, 
-//			@RequestBody Car car, 
-//			HttpServletResponse response) {
-//
-//
-//		System.out.println(car);
-//		
-//		int status = HttpServletResponse.SC_NOT_FOUND;
-//		
-//		car.setId(id);
-//		
-//		for( Car c : cars ) {
-//			if( c.getId() == id ) {
-//
-//				if( car.getMake() != null ) { c.setMake(car.getMake()); };
-//				if( car.getModel() != null ) { c.setMake(car.getModel()); };
-//				if( car.getYear() != 0 ) { c.setYear(car.getYear()); };
-//				
-//			    status = HttpServletResponse.SC_OK;
-// 			}
-//		}
-//		
-//		response.setStatus(status);
-//		
-//	}
+	@PatchMapping(value="/cars/{id}")
+	public void patchCar(
+			@PathVariable("id") int id, 
+			@RequestBody Car car, 
+			HttpServletResponse response) {
+
+		Optional<Car> optionalCar = carRepository.findById(id);
+		
+		int status = HttpServletResponse.SC_NOT_FOUND;
+		
+		if(optionalCar.isPresent()) {
+			Car theCar = optionalCar.get();
+			
+			if( car.getMake() != null ) theCar.setMake(car.getMake());
+			if( car.getModel() != null ) theCar.setModel(car.getModel());
+			if( car.getYear() > 0 ) theCar.setYear(car.getYear());
+			
+			carRepository.save(theCar);
+			
+			status = HttpServletResponse.SC_OK;
+		}
+
+		response.setStatus(status);
+		
+	}
 }
