@@ -1,18 +1,17 @@
 package cars.controllers;
 
 import java.util.Optional;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,12 +65,50 @@ public class CarController {
 	}
 	
 	@GetMapping( value = "/cars")
-	@ResponseBody public Vector<Car> getCars(
+	@ResponseBody 
+	public Iterable<Car> getCars(
 			@RequestParam("make") Optional<String> make,
 			@RequestParam("model") Optional<String> model,
 			@RequestParam("year") Optional<Integer> year,
 			HttpServletResponse response
 			) {
+		
+		Iterable<Car> cars = null;
+		
+		boolean isMake  = make.isPresent();
+		boolean isModel = model.isPresent();
+		boolean isYear  = year.isPresent();
+		
+		if( isMake && isModel && isYear ) {
+			cars = carRepository.findByMakeModelYear(make.get(), model.get(), year.get());
+		} else if ( isMake && isModel && !isYear) {
+			cars = carRepository.findByMakeModel(make.get(), model.get());
+		} else if ( isMake && !isModel && isYear) {
+			cars = carRepository.findByMakeYear(make.get(), year.get());
+		} else if ( isMake && !isModel && !isYear) {
+			cars = carRepository.findByMake(make.get());
+		} else if ( !isMake && isModel && isYear) {
+			cars = carRepository.findByModelYear(model.get(), year.get());
+		} else if ( !isMake && !isModel && isYear) {
+			cars = carRepository.findByYear(year.get());
+		} else if ( !isMake && isModel && !isYear) {
+			cars = carRepository.findByModel(model.get());
+		} else if ( !isMake && !isModel && !isYear) {
+			cars =  carRepository.findAll();
+		}
+		
+//		Car car = new Car();
+//        if(make.isPresent())  car.setMake(make.get());
+//        if(model.isPresent()) car.setModel(model.get());
+//        if(year.isPresent())  car.setYear(year.get());
+		
+		if( cars.iterator().hasNext() ) {
+			response.setStatus(HttpServletResponse.SC_OK);
+		} else {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		}
+		
+		return cars;
 //
 //		String searchMake  = make.isPresent() ? make.get() : null;
 //		String searchModel = model.isPresent() ? model.get() : null;
@@ -100,7 +137,7 @@ public class CarController {
 //		return localCars;
 //	
 		
-		return null;
+//		return null;
 	}
 
 	@GetMapping(value="/cars/{id}")
