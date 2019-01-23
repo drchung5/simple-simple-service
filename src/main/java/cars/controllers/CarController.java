@@ -97,10 +97,6 @@ public class CarController {
 			cars =  carRepository.findAll();
 		}
 		
-//		Car car = new Car();
-//        if(make.isPresent())  car.setMake(make.get());
-//        if(model.isPresent()) car.setModel(model.get());
-//        if(year.isPresent())  car.setYear(year.get());
 		
 		if( cars.iterator().hasNext() ) {
 			response.setStatus(HttpServletResponse.SC_OK);
@@ -109,35 +105,7 @@ public class CarController {
 		}
 		
 		return cars;
-//
-//		String searchMake  = make.isPresent() ? make.get() : null;
-//		String searchModel = model.isPresent() ? model.get() : null;
-//		Integer searchYear = year.isPresent() ? year.get() : null;
-//		
-//		Vector<Car> localCars = new Vector<Car>();
-//		
-//		for( Car car: cars ) {
-//			if( searchMake != null && !car.getMake().equalsIgnoreCase(searchMake)) {
-//				break;
-//			}
-//			if( searchModel != null && !car.getModel().equalsIgnoreCase(searchMake)) {
-//				break;
-//			}
-//			if( searchYear != null && !(car.getYear() == searchYear)) {
-//				break;
-//			}
-//			localCars.add(car);
-//		}
-//
-//		if ( localCars.isEmpty() ) {
-//			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//			localCars = null;
-//		}
-//		
-//		return localCars;
-//	
-		
-//		return null;
+
 	}
 
 	@GetMapping(value="/cars/{id}")
